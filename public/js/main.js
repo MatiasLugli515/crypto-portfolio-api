@@ -11,6 +11,7 @@ let configuracionOrden = {
 document.addEventListener('DOMContentLoaded', () => {
     cargarPortfolio();
     configurarEventos();
+    cargarTendencias();
 });
 
 // se le piden los datos a el backend, app.js
@@ -111,11 +112,10 @@ function configurarEventos() {
         cabecera.addEventListener('click', () => {
             const columnaSeleccionada = cabecera.getAttribute('data-sort');
             
-            // Si clickea la misma columna que ya estaba activa, invertimos la dirección
             if (configuracionOrden.columna === columnaSeleccionada) {
                 configuracionOrden.direccion = configuracionOrden.direccion === 'asc' ? 'desc' : 'asc';
             } else {
-                // Si clickea una nueva columna, la guardamos y por defecto ordenamos descendente
+                
                 configuracionOrden.columna = columnaSeleccionada;
                 configuracionOrden.direccion = 'desc';
             }
@@ -124,9 +124,10 @@ function configurarEventos() {
             ejecutarOrdenamiento();
         });
     });
+
+    //boton de actualizar precios, simplemente vuelve a cargar el portfolio, implica otra llamada de api.
     refreshBtn.addEventListener('click', () => {
         searchInput.value = '';
-        // reset de las flechas al actualizar
         document.querySelectorAll('th.sortable').forEach(th => {
             th.classList.remove('sort-active');
             th.querySelector('.sort-arrow').textContent = '↕';
@@ -181,4 +182,39 @@ function formatearMoneda(valor) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 4 
     }).format(valor);
+}
+
+
+// mostrar tendencias del meercado en pantalla
+async function cargarTendencias() { 
+    const marketList = document.getElementById('market-list');
+
+    try { 
+        const respuesta = await fetch('/api/trending');
+        if (!respuesta.ok) throw new Error('Error al consultar el backend');
+        const trends = await respuesta.json();
+        console.log("datos de tendencias:", trends);
+        marketList.innerHTML = ''; 
+        
+        trends.forEach(coin => {
+            const item = document.createElement('div');
+            item.classList.add('market-item');
+            item.innerHTML = `
+                <div style="display: flex ; align-items: center; gap: 12px ;">
+                    <img src="${coin.thumb}" alt="${coin.name}" style="width: 24px; height: 24px;">
+                    <span>${coin.name} (${coin.symbol.toUpperCase()})</span>
+                    <span>${coin.price ? formatearMoneda(coin.price) : 'N/A'}</span>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 12px; color: var(--text-secondary);">Rank Global</div>
+                <strong>#${coin.market_cap_rank}</strong>
+            </div>
+            `;
+            marketList.appendChild(item);
+        });
+    } catch (error) {
+        console.error(error);
+        marketList.innerHTML = '<div class="market-item-loading" style="color: var(--danger);">Error al cargar tendencias.</div>';
+    }
 }

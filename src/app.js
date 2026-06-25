@@ -1,5 +1,3 @@
-//Prueba basica de server express
-
 
 const express = require('express');
 const path = require('path');
@@ -45,7 +43,7 @@ app.get('/api/portfolio', async (req, res) => {
 
         // procesar cada cripto del portfolio
         const processedPortfolio = portfolio.map(coin => {
-            // g
+
             const currentPrice = pricesData[coin.id]?.usd || 0;
             
             // calculos para las ganancias.
@@ -92,6 +90,41 @@ app.get('/api/portfolio', async (req, res) => {
         res.status(500).json({ error: "Hubo un problema al procesar el portfolio" });
     }
 });
+
+
+app.get('/api/trending', async (req, res) => {
+    const url = `https://api.coingecko.com/api/v3/search/trending`;
+    const apiResponse = await fetch(url);
+
+    if (!apiResponse.ok) {  
+        throw new Error('Error al consultar la API de CoinGecko');
+    }
+    const trending = await apiResponse.json();
+    const ids = trending.coins.map(coin => coin.item.id).join(',');
+    console.log("IDS cruzadas tendencias:", ids);
+    const url1 = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
+
+    const apiResponse2 = await fetch(url1);
+    if (!apiResponse2.ok) {  
+        throw new Error('Error al consultar la API de CoinGecko');
+    }
+
+    const detTrend = await apiResponse2.json();
+    console.log("detTrend:", detTrend);
+
+    const response = trending.coins.map(coin => ({                
+        thumb : coin.item.thumb,
+        symbol: coin.item.symbol,
+        name: coin.item.name,
+        market_cap_rank: coin.item.market_cap_rank,
+        price : detTrend[coin.item.id]?.usd || 0
+    }));
+
+    res.json(response);
+
+});
+    
+    
 
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
