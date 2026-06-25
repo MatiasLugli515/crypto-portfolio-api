@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <header class="main-header">
+            <div class="logo-area">
+                <h1>CryptoVault</h1>
+                <p class="subtitle">Gestión de Activos Locales</p>
+            </div>
+            <div class="total-balance-card">
+                <span class="card-label">Valor Total del Portfolio</span>
+                <h2 id="total-balance">$0.00 <span class="currency">USD</span></h2>
+                <span id="total-performance" class="performance neutral">0.00%</span>
+            </div>
+        </header>
+
+        <section class="controls-bar">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Buscar moneda por nombre o símbolo...">
+            </div>
+            <div class="filter-box">
+                <button id="refresh-btn" class="btn-primary">Actualizar Precios</button>
+            </div>
+        </section>
+
+        <main class="dashboard-layout">
+            
+            <section class="portfolio-section">
+                <h3>Mis Inversiones</h3>
+                <div class="table-container">
+                    <table id="portfolio-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="name">Activo <span class="sort-arrow">↕</span></th>
+                                <th class="sortable" data-sort="amount">Cantidad <span class="sort-arrow">↕</span></th>
+                                <th class="sortable" data-sort="averageBuyPrice">Precio Compra <span class="sort-arrow">↕</span></th>
+                                <th class="sortable" data-sort="currentPrice">Precio Actual <span class="sort-arrow">↕</span></th>
+                                <th class="sortable" data-sort="currentValue">Valor Actual <span class="sort-arrow">↕</span></th>
+                                <th class="sortable" data-sort="profitLossPct">Rendimiento (P&L) <span class="sort-arrow">↕</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolio-body">
+                            <tr>
+                                <td colspan="6" class="table-loading">Cargando datos del portfolio...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <aside class="market-section">
+                <h3>Top Tendencias (Mercado)</h3>
+                <div id="market-list" class="market-list">
+                    <div class="market-item-loading">Cargando tendencias...</div>
+                </div>
+            </aside>
+
+        </main>
+
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
