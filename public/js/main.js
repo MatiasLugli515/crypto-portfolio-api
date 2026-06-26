@@ -1,7 +1,8 @@
 
 //para evitar hacer request con cada cambio de filtro.
-let portfolioData = [];
-let originalPortfolioData = [];
+let visibleAssets = [];
+let allAssets = [];
+let selectedPortfolioId = null;
 
 let configuracionOrden = {
     columna: null,
@@ -12,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarPortfolio();
     configurarEventos();
     cargarTendencias();
+    cargarSelectorPortfolios()
 });
 
 // se le piden los datos a el backend, app.js
@@ -20,16 +22,16 @@ async function cargarPortfolio() {
     tableBody.innerHTML = `<tr><td colspan="6" class="table-loading">Cargando datos del servidor...</td></tr>`;
 
     try {
-        const respuesta = await fetch('/api/portfolio');
+        const respuesta = await fetch(`/api/portfolio/${selectedPortfolioId}`);
         if (!respuesta.ok) throw new Error('Error al consultar el backend');
         
         const datos = await respuesta.json();
         
-        portfolioData = datos.assets;
-        originalPortfolioData = [...datos.assets]; // respaldo
+        visibleAssets = datos.assets;
+        allAssets = [...datos.assets]; // respaldo
         
         renderizarResumen(datos.summary);
-        renderizarTabla(portfolioData);
+        renderizarTabla(visibleAssets);
         
     } catch (error) {
         console.error(error);
@@ -89,12 +91,13 @@ function configurarEventos() {
     const searchInput = document.getElementById('search-input');
     const refreshBtn = document.getElementById('refresh-btn');
     const cabecerasSortables = document.querySelectorAll('th.sortable');
+    const portfolioSelect = document.getElementById('portfolio-select');
     //evento para la busqueda
     searchInput.addEventListener('input', (e) => {
         const termino = e.target.value.toLowerCase();
         
         // filtro por simbolo o nombre.
-        portfolioData = originalPortfolioData.filter(coin => 
+        visibleAssets = allAssets.filter(coin => 
             coin.name.toLowerCase().includes(termino) || 
             coin.symbol.toLowerCase().includes(termino)
         );
@@ -103,7 +106,7 @@ function configurarEventos() {
         if (configuracionOrden.columna) {
             ejecutarOrdenamiento();
         } else {
-            renderizarTabla(portfolioData);
+            renderizarTabla(visibleAssets);
         }
     });
 
@@ -135,6 +138,17 @@ function configurarEventos() {
         configuracionOrden = { columna: null, direccion: 'desc' };
         cargarPortfolio();
     });
+
+    portfolioSelect.addEventListener('change', (e) => {
+        selectedPortfolioId = e.target.value;
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.classList.remove('sort-active');
+            th.querySelector('.sort-arrow').textContent = '↕';
+        });
+        configuracionOrden = { columna: null, direccion: 'desc' };
+        console.log("Portfolio seleccionado:", selectedPortfolioId);
+        cargarPortfolio();
+    });
 }
 
 function actualizarIconosDeColumnas(cabeceraActiva) {
@@ -153,7 +167,7 @@ function ejecutarOrdenamiento() {
     const key = configuracionOrden.columna;
     const direccion = configuracionOrden.direccion;
 
-    portfolioData.sort((a, b) => {
+    visibleAssets.sort((a, b) => {
         // valor exacto del a columna a ordenar, ya sea nombre, simbolo, monto, precio, porcentaje.
         let valorA = a[key];
         let valorB = b[key];
@@ -171,7 +185,7 @@ function ejecutarOrdenamiento() {
             : valorB - valorA;
     });
     
-    renderizarTabla(portfolioData);
+    renderizarTabla(visibleAssets);
 }
 
 //formato de moneda para internacionalizacion.
@@ -216,5 +230,28 @@ async function cargarTendencias() {
     } catch (error) {
         console.error(error);
         marketList.innerHTML = '<div class="market-item-loading" style="color: var(--danger);">Error al cargar tendencias.</div>';
+    }
+}
+
+async function cargarSelectorPortfolios() {
+    const selector = document.getElementById('portfolio-select');
+
+    try {
+        const respuesta = await fetch('/api/portfolios');
+        if (!respuesta.ok) throw new Error('Error al consultar el backend');
+        const portfolios = await respuesta.json();
+
+        selector.innerHTML = '<option value="" disabled selected>Selecciona un Portfolio</option>';
+        portfolios.forEach(portfolio => {
+            const option = document.createElement('option');
+            option.value = portfolio.id;
+            option.textContent = portfolio.name;
+            selector.appendChild(option);
+        });
+        
+    
+    } catch (error) {
+        console.error("Fallo al cargar opciones:",error);
+        selector.innerHTML = '<option value="" disabled selected>Error al cargar portfolios</option>';
     }
 }

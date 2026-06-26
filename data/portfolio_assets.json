@@ -1,0 +1,42 @@
+[
+  {
+    "portfolio_id": 1,
+    "id": "bitcoin",
+    "name": "Bitcoin",
+    "symbol": "btc",
+    "amount": 0.35,
+    "average_buy_price": 61200.00
+  },
+  {
+    "portfolio_id": 1,
+    "id": "ethereum",
+    "name": "Ethereum",
+    "symbol": "eth",
+    "amount": 2.5,
+    "average_buy_price": 3150.00
+  },
+  {
+    "portfolio_id": 2,
+    "id": "solana",
+    "name": "Solana",
+    "symbol": "sol",
+    "amount": 18.0,
+    "average_buy_price": 145.20
+  },
+  {
+    "portfolio_id": 2,
+    "id": "polkadot",
+    "name": "Polkadot",
+    "symbol": "dot",
+    "amount": 75.0,
+    "average_buy_price": 6.10
+  },
+  {
+    "portfolio_id": 2,
+    "id": "bitcoin",
+    "name": "Bitcoin",
+    "symbol": "btc",
+    "amount": 0.05,
+    "average_buy_price": 64000.00
+  }
+]

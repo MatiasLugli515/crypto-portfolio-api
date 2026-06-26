@@ -154,6 +154,12 @@ body {
     opacity: 0.9;
 }
 
+.portfolio-select select {
+    padding: 8px; 
+    border-radius: 4px; 
+    border: 1px solid #ccc;
+}
+
 /* 
    columnas de dashboard
    */

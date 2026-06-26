@@ -10,16 +10,29 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, '../public')));
 
-const portfolioPath = path.join(__dirname, '../data/portfolio.json');
+const assetsPath = path.join(__dirname, '../data/portfolio_assets.json');
+const portfoliosPath = path.join(__dirname, '../data/portfolios.json');
 
-app.get('/api/portfolio', async (req, res) => {
+app.get('/api/portfolio/:id', async (req, res) => {
     try {
-        const rawData = await fs.readFile(portfolioPath, 'utf-8');
+        const rawData = await fs.readFile(assetsPath, 'utf-8');
         const portfolio = JSON.parse(rawData);
 
-        const cryptoIds = portfolio.map(coin => coin.id).join(',');
+        const portfolioId = req.params.id;
+
+        const cryptoIds = portfolio
+            .filter(coin => coin.portfolio_id == portfolioId)
+            .map(coin => coin.id)
+            .join(',');
+        
+
+        const cryptoIdsSet = new Set(cryptoIds.split(',').filter(id => id.trim() !== ''));
+
+        const cryptoIdsFiltered = Array.from(cryptoIdsSet).join(',');
+
+        console.log("cryptoIdsFiltered:", cryptoIdsFiltered);
         //url de la API con la criptomoneda y la moneda de referencia
-        const url = `https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds}&vs_currencies=usd`;
+        const url = `https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIdsFiltered}&vs_currencies=usd`;
 
         const apiResponse = await fetch(url);
         
@@ -40,9 +53,11 @@ app.get('/api/portfolio', async (req, res) => {
         let globalTotalValue = 0;
         let globalTotalCost = 0;
 
-
+        //es necesario un segundo filtro si no las repetidas entre portfolios se filtraran.
+        const portfolioFiltered = portfolio.filter(coin => coin.portfolio_id == portfolioId); 
+        
         // procesar cada cripto del portfolio
-        const processedPortfolio = portfolio.map(coin => {
+        const processedPortfolio = portfolioFiltered.map(coin => {
 
             const currentPrice = pricesData[coin.id]?.usd || 0;
             
@@ -101,7 +116,7 @@ app.get('/api/trending', async (req, res) => {
     }
     const trending = await apiResponse.json();
     const ids = trending.coins.map(coin => coin.item.id).join(',');
-    console.log("IDS cruzadas tendencias:", ids);
+    //console.log("IDS cruzadas tendencias:", ids);
     const url1 = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
 
     const apiResponse2 = await fetch(url1);
@@ -110,7 +125,7 @@ app.get('/api/trending', async (req, res) => {
     }
 
     const detTrend = await apiResponse2.json();
-    console.log("detTrend:", detTrend);
+    //console.log("detTrend:", detTrend);
 
     const response = trending.coins.map(coin => ({                
         thumb : coin.item.thumb,
@@ -123,9 +138,27 @@ app.get('/api/trending', async (req, res) => {
     res.json(response);
 
 });
-    
-    
 
-app.listen(PORT, () => {
+app.get('/api/portfolios', async (req, res) => {
+    try {
+        const rawData = await fs.readFile(portfoliosPath, 'utf-8');
+        const portfolios = JSON.parse(rawData);
+
+        console.log("portfolios leidos:", portfolios);
+        
+        const response = portfolios.map(portfolio => ({
+            id: portfolio.id,
+            name: portfolio.name
+        }));
+
+        res.json(response);
+    } catch (error) {
+        console.error("Error al leer portfolios:", error);
+        res.status(500).json({ error: "Hubo un problema al leer los portfolios" });
+    }
+});
+
+
+    app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
