@@ -1,4 +1,16 @@
 {
+  "name": "crypto-portfolio-api",
+  "version": "1.0.0",
+  "description": "Dashboard Crypto simple con implementacion de API",
+  "main": "src/app.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "echo \"No tests\" && exit 0"
+  },
   "dependencies": {
     "express": "^5.2.1"
   },
