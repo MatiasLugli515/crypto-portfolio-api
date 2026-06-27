@@ -18,8 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // se le piden los datos a el backend, app.js
 async function cargarPortfolio() {
+    console.log("activo:",selectedPortfolioId);
     const tableBody = document.getElementById('portfolio-body');
     tableBody.innerHTML = `<tr><td colspan="6" class="table-loading">Cargando datos del servidor...</td></tr>`;
+
+    if(selectedPortfolioId === null || selectedPortfolioId === "") {
+        tableBody.innerHTML = `<tr><td colspan="6" class="table-loading">Selecciona un portfolio para ver sus datos.</td></tr>`;
+        await fetch(`/api/portfolio/recarga`);
+        return;
+    }
 
     try {
         const respuesta = await fetch(`/api/portfolio/${selectedPortfolioId}`);
@@ -129,14 +136,19 @@ function configurarEventos() {
     });
 
     //boton de actualizar precios, simplemente vuelve a cargar el portfolio, implica otra llamada de api.
-    refreshBtn.addEventListener('click', () => {
+    refreshBtn.addEventListener('click', async() => {
         searchInput.value = '';
         document.querySelectorAll('th.sortable').forEach(th => {
             th.classList.remove('sort-active');
             th.querySelector('.sort-arrow').textContent = '↕';
         });
         configuracionOrden = { columna: null, direccion: 'desc' };
-        cargarPortfolio();
+        const selectedPortfolioIdTemp = selectedPortfolioId; 
+        selectedPortfolioId = null;
+        await cargarPortfolio();
+        selectedPortfolioId = selectedPortfolioIdTemp; 
+        await cargarPortfolio();
+        cargarTendencias();
     });
 
     portfolioSelect.addEventListener('change', (e) => {
@@ -219,7 +231,6 @@ async function cargarTendencias() {
                     <span>${coin.name} (${coin.symbol.toUpperCase()})</span>
                     <span>${coin.price ? formatearMoneda(coin.price) : 'N/A'}</span>
                 </div>
-            </div>
             <div style="text-align: right;">
                 <div style="font-size: 12px; color: var(--text-secondary);">Rank Global</div>
                 <strong>#${coin.market_cap_rank}</strong>
