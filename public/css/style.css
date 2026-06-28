@@ -28,7 +28,7 @@ body {
 }
 
 .dashboard-container {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
 }
 
@@ -60,7 +60,31 @@ body {
     padding: 16px 24px;
     border-radius: 12px;
     border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+}
+
+.portfolio-summary {
+    min-width: 0;
+    flex: 1;
+}
+
+.portfolio-summary h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.balance-summary {
     text-align: right;
+    flex-shrink: 0;
 }
 
 .card-label {
@@ -211,7 +235,20 @@ th.sort-active .sort-arrow {
     background-color: var(--bg-card);
     border-radius: 12px;
     border: 1px solid var(--border-color);
-    overflow: hidden;
+    overflow: auto;
+    max-height: 70vh;
+}
+
+.table-container table {
+    min-width: 720px;
+}
+
+.table-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(6px);
 }
 
 table {
@@ -255,6 +292,9 @@ tr:hover td {
     border-radius: 12px;
     border: 1px solid var(--border-color);
     padding: 12px;
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .market-item {
@@ -285,6 +325,12 @@ tr:hover td {
     .total-balance-card {
         text-align: left;
         margin-top: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .balance-summary {
+        text-align: left;
     }
     .dashboard-layout {
         grid-template-columns: 1fr;

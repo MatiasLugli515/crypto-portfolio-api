@@ -24,7 +24,13 @@ async function cargarPortfolio() {
 
     if(selectedPortfolioId === null || selectedPortfolioId === "") {
         tableBody.innerHTML = `<tr><td colspan="6" class="table-loading">Selecciona un portfolio para ver sus datos.</td></tr>`;
-        await fetch(`/api/portfolio/recarga`);
+        const recarga = await fetch(`/api/portfolio/recarga`);
+        if (recarga.ok){
+         const data = await recarga.json();
+         console.log ("que llega en caso de fallo de api",data);
+         manejarAlerta(data.falloAPI)
+
+        }
         return;
     }
 
@@ -94,6 +100,20 @@ function renderizarTabla(activos) {
     });
 }
 
+function actualizarNombrePortfolio() {
+    const displayEl = document.getElementById('portfolio-name-display');
+    const selector = document.getElementById('portfolio-select');
+
+    if (!displayEl || !selector) return;
+
+    const optionSeleccionada = selector.options[selector.selectedIndex];
+    const nombre = optionSeleccionada && optionSeleccionada.value
+        ? optionSeleccionada.textContent
+        : 'Selecciona un portfolio';
+
+    displayEl.textContent = nombre;
+}
+
 function configurarEventos() {
     const searchInput = document.getElementById('search-input');
     const refreshBtn = document.getElementById('refresh-btn');
@@ -146,13 +166,17 @@ function configurarEventos() {
         const selectedPortfolioIdTemp = selectedPortfolioId; 
         selectedPortfolioId = null;
         await cargarPortfolio();
-        selectedPortfolioId = selectedPortfolioIdTemp; 
-        await cargarPortfolio();
+
+        if (selectedPortfolioIdTemp != null){
+            selectedPortfolioId = selectedPortfolioIdTemp; 
+            await cargarPortfolio();
+        }
         cargarTendencias();
     });
 
     portfolioSelect.addEventListener('change', (e) => {
         selectedPortfolioId = e.target.value;
+        actualizarNombrePortfolio();
         document.querySelectorAll('th.sortable').forEach(th => {
             th.classList.remove('sort-active');
             th.querySelector('.sort-arrow').textContent = '↕';
@@ -206,7 +230,7 @@ function formatearMoneda(valor) {
         style: 'currency',
         currency: 'USD',
         minimumFractionDigits: 2,
-        maximumFractionDigits: 4 
+        maximumFractionDigits: 2 
     }).format(valor);
 }
 
@@ -219,10 +243,11 @@ async function cargarTendencias() {
         const respuesta = await fetch('/api/trending');
         if (!respuesta.ok) throw new Error('Error al consultar el backend');
         const trends = await respuesta.json();
+        manejarAlerta(trends.falloAPI)
         console.log("datos de tendencias:", trends);
         marketList.innerHTML = ''; 
         
-        trends.forEach(coin => {
+        trends.trending.forEach(coin => {
             const item = document.createElement('div');
             item.classList.add('market-item');
             item.innerHTML = `
@@ -264,5 +289,34 @@ async function cargarSelectorPortfolios() {
     } catch (error) {
         console.error("Fallo al cargar opciones:",error);
         selector.innerHTML = '<option value="" disabled selected>Error al cargar portfolios</option>';
+    }
+}
+
+function manejarAlerta(falloAPI) {
+    let alertaDiv = document.getElementById('stale-alert');
+    
+    if (!alertaDiv) {
+        alertaDiv = document.createElement('div');
+        alertaDiv.id = 'stale-alert';
+        alertaDiv.style.backgroundColor = 'rgba(255, 165, 0, 0.1)';
+        alertaDiv.style.border = '1px solid #ffa500';
+        alertaDiv.style.color = '#ffa500';
+        alertaDiv.style.padding = '12px 16px';
+        alertaDiv.style.borderRadius = '8px';
+        alertaDiv.style.marginBottom = '24px';
+        alertaDiv.style.fontWeight = '500';
+        alertaDiv.style.display = 'none';
+        alertaDiv.innerHTML = '⚠️ <strong>Aviso de Red:</strong> La API de precios está congestionada. Mostrando la última versión guardada (precios desactualizados).';
+        
+        const controles = document.querySelector('.controls-bar');
+        if(controles) {
+            controles.parentNode.insertBefore(alertaDiv, controles.nextSibling);
+        }
+    }
+
+    if (falloAPI) {
+        alertaDiv.style.display = 'block';
+    } else {
+        alertaDiv.style.display = 'none';
     }
 }
