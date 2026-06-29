@@ -155,7 +155,7 @@ function configurarEventos() {
         });
     });
 
-    //boton de actualizar precios, simplemente vuelve a cargar el portfolio, implica otra llamada de api.
+    //boton de actualizar precios, funciona parecido a recargar la pagina pero vuelve a cargar el portfolio seleccionado despues
     refreshBtn.addEventListener('click', async() => {
         searchInput.value = '';
         document.querySelectorAll('th.sortable').forEach(th => {

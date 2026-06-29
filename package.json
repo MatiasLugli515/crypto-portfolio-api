@@ -8,8 +8,7 @@
   },
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
-    "test": "echo \"No tests\" && exit 0"
+    "dev": "nodemon src/app.js"
   },
   "dependencies": {
     "express": "^5.2.1"
